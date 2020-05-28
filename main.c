@@ -4,12 +4,12 @@
 #include "solve.h"
 #include "f.h"
 #define ERROR_READ (-1)
-#define A (1e2)
-#define N (1e1)
+#define H (1e-3)
+#define N (1e5)
 
 int main(int argc, char **argv)
 {
-	double a, eps, x, h = A/N;
+	double a = 0, eps, x, b = H, f_a, f_b;
 	int it, i;
 	clock_t time_beg;
 
@@ -25,11 +25,19 @@ int main(int argc, char **argv)
 	}
 
 	time_beg = clock();
-	for( i = 0, a = 0; i<N; i++, a += h )
+	f_a = f(a, eps);
+	f_b = f(b, eps);
+	for( i = 0; i<N; i++, a += H, b += H )
 	{
-		it = solve(&f, a, a + h, eps, &x);
-		if( it!=SOLVE_NOT_FOUND )
-			printf("x = %.16e\t|f(x)| = %.16e\tit = %d\n", x, fabs(f(x, eps)), it);
+		if( f_a*f_b<=0 )
+		{
+			it = solve(&f, a, b, eps, &x);
+			if( it!=SOLVE_NOT_FOUND )
+				printf("x = %.16e\t|f(x)| = %.16e\tit = %d\n", x, fabs(f(x, eps)), it);
+		}
+
+		f_a = f_b;
+		f_b = f(b, eps);
 	}
 	printf("Time: %.2lf seconds\n", (double)(clock() - time_beg)/CLOCKS_PER_SEC);
 
